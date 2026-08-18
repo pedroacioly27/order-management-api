@@ -1,10 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -17,7 +16,7 @@ export class UsersService {
       where: { email: createUserDto.email },
     });
     if (userExists) {
-      throw new BadRequestException('email already in use');
+      throw new ConflictException('email already in use');
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -28,9 +27,9 @@ export class UsersService {
       password: hashedPassword,
     });
 
-    const { password: _, ...newUser } = user;
-
     await this.userRepository.save(user);
+
+    const { password: _, ...newUser } = user;
 
     return newUser;
   }
