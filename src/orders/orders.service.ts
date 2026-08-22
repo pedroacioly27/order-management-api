@@ -52,11 +52,24 @@ export class OrdersService {
     return order;
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  async update(id: number, updateOrderDto: UpdateOrderDto, req) {
+    const order = await this.findOne(id, req);
+
+    if (updateOrderDto.clientName !== undefined) {
+      order.clientName = updateOrderDto.clientName;
+    }
+    if (updateOrderDto.description !== undefined) {
+      order.description = updateOrderDto.description;
+    }
+
+    return this.orderRepository.save(order);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  async remove(id: number, req) {
+    const order = await this.findOne(id, req);
+
+    await this.orderRepository.delete(order.id);
+
+    return { message: 'Order successfully deleted' };
   }
 }
