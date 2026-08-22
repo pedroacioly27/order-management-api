@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,7 +23,7 @@ export class OrdersService {
       where: { id: req.user.sub },
     });
     if (!user) {
-      throw new UnauthorizedException('User not authorization');
+      throw new UnauthorizedException('User not authorized');
     }
 
     const order = this.orderRepository.create({
@@ -33,12 +37,19 @@ export class OrdersService {
     return order;
   }
 
-  findAll() {
-    return `This action returns all orders`;
+  findAll(req) {
+    return this.orderRepository.find({ where: { user: { id: req.user.sub } } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  async findOne(id: number, req) {
+    const order = await this.orderRepository.findOne({
+      where: { id, user: { id: req.user.sub } },
+    });
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return order;
   }
 
   update(id: number, updateOrderDto: UpdateOrderDto) {
