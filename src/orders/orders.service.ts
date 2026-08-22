@@ -38,7 +38,10 @@ export class OrdersService {
   }
 
   findAll(req) {
-    return this.orderRepository.find({ where: { user: { id: req.user.sub } } });
+    return this.orderRepository.find({
+      where: { user: { id: req.user.sub } },
+      relations: { pieces: true },
+    });
   }
 
   async findOne(id: number, req) {

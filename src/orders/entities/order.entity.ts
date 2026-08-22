@@ -1,3 +1,4 @@
+import { Piece } from 'src/pieces/entities/piece.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
@@ -5,6 +6,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -25,4 +27,7 @@ export class Order {
   @ManyToOne(() => User, (user) => user.orders)
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @OneToMany(() => Piece, (piece) => piece.order)
+  pieces: Piece[];
 }
