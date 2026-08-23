@@ -42,7 +42,7 @@ export class PiecesService {
   async findOne(id: number, req) {
     const piece = await this.pieceRepository.findOne({
       where: { id, order: { user: { id: req.user.sub } } },
-      relations: { order: true },
+      relations: { order: true, parts: true },
     });
     if (!piece) {
       throw new NotFoundException('Piece not found');

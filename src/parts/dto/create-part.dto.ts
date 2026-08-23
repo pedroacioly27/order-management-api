@@ -7,7 +7,7 @@ export class CreatePartDto {
 
   @IsNumber()
   @Min(0)
-  weigth: number;
+  weight: number;
 
   @IsNumber()
   @IsNotEmpty()
