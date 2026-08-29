@@ -7,8 +7,9 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
+import { AuthRequest } from 'src/types/auth-request.type';
 
 @Injectable()
 export class OrdersService {
@@ -18,7 +19,7 @@ export class OrdersService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
-  async create(createOrderDto: CreateOrderDto, req) {
+  async create(createOrderDto: CreateOrderDto, req: AuthRequest) {
     const user = await this.userRepository.findOne({
       where: { id: req.user.sub },
     });
@@ -37,16 +38,27 @@ export class OrdersService {
     return order;
   }
 
-  findAll(req) {
+  findAll(req: AuthRequest, clientName: string) {
+    if (clientName) {
+      console.log(clientName);
+      return this.orderRepository.find({
+        where: {
+          user: { id: req.user.sub },
+          clientName: ILike(`%${clientName}%`),
+        },
+        relations: { pieces: { parts: true } },
+      });
+    }
     return this.orderRepository.find({
       where: { user: { id: req.user.sub } },
-      relations: { pieces: true },
+      relations: { pieces: { parts: true } },
     });
   }
 
-  async findOne(id: number, req) {
+  async findOne(id: number, req: AuthRequest) {
     const order = await this.orderRepository.findOne({
       where: { id, user: { id: req.user.sub } },
+      relations: { pieces: { parts: true } },
     });
     if (!order) {
       throw new NotFoundException('Order not found');
@@ -55,7 +67,7 @@ export class OrdersService {
     return order;
   }
 
-  async update(id: number, updateOrderDto: UpdateOrderDto, req) {
+  async update(id: number, updateOrderDto: UpdateOrderDto, req: AuthRequest) {
     const order = await this.findOne(id, req);
 
     if (updateOrderDto.clientName !== undefined) {
@@ -68,7 +80,7 @@ export class OrdersService {
     return this.orderRepository.save(order);
   }
 
-  async remove(id: number, req) {
+  async remove(id: number, req: AuthRequest) {
     const order = await this.findOne(id, req);
 
     await this.orderRepository.delete(order.id);

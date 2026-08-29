@@ -25,7 +25,7 @@ import { PartsModule } from './parts/parts.module';
 
         autoLoadEntities: true,
 
-        synchronize: true,
+        synchronize: false,
       }),
     }),
     AuthModule,

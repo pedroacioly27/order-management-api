@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Part } from './entities/part.entity';
 import { Repository } from 'typeorm';
 import { Piece } from 'src/pieces/entities/piece.entity';
+import { AuthRequest } from 'src/types/auth-request.type';
 
 @Injectable()
 export class PartsService {
@@ -41,7 +42,7 @@ export class PartsService {
     return part;
   }
 
-  async create(createPartDto: CreatePartDto, req) {
+  async create(createPartDto: CreatePartDto, req: AuthRequest) {
     const piece = await this.findOnePiece(createPartDto.pieceId, req.user.sub);
     const part = this.partRepository.create({
       name: createPartDto.name,
@@ -54,7 +55,7 @@ export class PartsService {
     return part;
   }
 
-  async update(id: number, updatePartDto: UpdatePartDto, req) {
+  async update(id: number, updatePartDto: UpdatePartDto, req: AuthRequest) {
     const part = await this.findOnePart(id, req.user.sub);
 
     if (updatePartDto.name !== undefined) {
@@ -74,7 +75,7 @@ export class PartsService {
     return this.partRepository.save(part);
   }
 
-  async remove(id: number, req) {
+  async remove(id: number, req: AuthRequest) {
     const part = await this.findOnePart(id, req.user.sub);
 
     await this.partRepository.delete(part.id);

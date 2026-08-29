@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -26,8 +27,8 @@ export class OrdersController {
   }
 
   @Get()
-  findAll(@Req() req) {
-    return this.ordersService.findAll(req);
+  findAll(@Req() req, @Query('clientName') clientName: string) {
+    return this.ordersService.findAll(req, clientName);
   }
 
   @Get(':id')

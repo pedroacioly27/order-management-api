@@ -1,7 +1,7 @@
 import { Piece } from 'src/pieces/entities/piece.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity('parts')
 export class Part {
   @PrimaryGeneratedColumn()
   id: number;

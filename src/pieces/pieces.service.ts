@@ -4,7 +4,8 @@ import { UpdatePieceDto } from './dto/update-piece.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Piece } from './entities/piece.entity';
 import { Order } from 'src/orders/entities/order.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
+import { AuthRequest } from 'src/types/auth-request.type';
 
 @Injectable()
 export class PiecesService {
@@ -14,7 +15,7 @@ export class PiecesService {
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
   ) {}
-  async create(createPieceDto: CreatePieceDto, req) {
+  async create(createPieceDto: CreatePieceDto, req: AuthRequest) {
     const order = await this.orderRepository.findOne({
       where: { id: createPieceDto.orderId, user: { id: req.user.sub } },
     });
@@ -30,16 +31,27 @@ export class PiecesService {
     return piece;
   }
 
-  async findAll(req) {
+  async findAll(req: AuthRequest, pieceName: string) {
+    if (pieceName) {
+      const pieces = await this.pieceRepository.find({
+        where: {
+          name: ILike(`%${pieceName}%`),
+          order: { user: { id: req.user.sub } },
+        },
+        relations: { order: true, parts: true },
+      });
+
+      return pieces;
+    }
     const pieces = await this.pieceRepository.find({
       where: { order: { user: { id: req.user.sub } } },
-      relations: { order: true },
+      relations: { order: true, parts: true },
     });
 
     return pieces;
   }
 
-  async findOne(id: number, req) {
+  async findOne(id: number, req: AuthRequest) {
     const piece = await this.pieceRepository.findOne({
       where: { id, order: { user: { id: req.user.sub } } },
       relations: { order: true, parts: true },
@@ -50,7 +62,7 @@ export class PiecesService {
     return piece;
   }
 
-  async update(id: number, updatePieceDto: UpdatePieceDto, req) {
+  async update(id: number, updatePieceDto: UpdatePieceDto, req: AuthRequest) {
     const piece = await this.findOne(id, req);
 
     if (updatePieceDto.name !== undefined) {
@@ -71,7 +83,7 @@ export class PiecesService {
     return this.pieceRepository.save(piece);
   }
 
-  async remove(id: number, req) {
+  async remove(id: number, req: AuthRequest) {
     const piece = await this.findOne(id, req);
 
     await this.pieceRepository.delete(piece.id);

@@ -1,9 +1,14 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { AuthRequest } from 'src/types/auth-request.type';
 
 @Injectable()
 export class UsersService {
@@ -38,5 +43,19 @@ export class UsersService {
     return this.userRepository.findOne({
       where: { email: data },
     });
+  }
+
+  async findById(req: AuthRequest) {
+    const user = await this.userRepository.findOne({
+      where: { id: req.user.sub },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const { password: _, ...userWithoutPassword } = user;
+
+    return userWithoutPassword;
   }
 }

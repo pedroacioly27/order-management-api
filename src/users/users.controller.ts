@@ -7,11 +7,10 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
   @Get('me')
   @UseGuards(AuthGuard)
   me(@Req() req) {
-    return req.user;
+    return this.usersService.findById(req);
   }
 
   @Post()
