@@ -47,11 +47,15 @@ export class OrdersService {
           clientName: ILike(`%${clientName}%`),
         },
         relations: { pieces: { parts: true } },
+        order: {
+          id: 'DESC',
+        },
       });
     }
     return this.orderRepository.find({
       where: { user: { id: req.user.sub } },
       relations: { pieces: { parts: true } },
+      order: { id: 'DESC' },
     });
   }
 
