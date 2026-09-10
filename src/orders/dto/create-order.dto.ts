@@ -6,6 +6,5 @@ export class CreateOrderDto {
   clientName: string;
 
   @IsString()
-  @IsNotEmpty()
   description: string;
 }
