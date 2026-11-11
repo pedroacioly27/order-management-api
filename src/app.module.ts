@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { OrdersModule } from './orders/orders.module';
 import { PiecesModule } from './pieces/pieces.module';
 import { PartsModule } from './parts/parts.module';
+import { CategoriesModule } from './categories/categories.module';
+import { TransactionsModule } from './transactions/transactions.module';
 
 @Module({
   imports: [
@@ -23,6 +25,10 @@ import { PartsModule } from './parts/parts.module';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
 
+        ssl: {
+          rejectUnauthorized: false,
+        },
+
         autoLoadEntities: true,
 
         synchronize: false,
@@ -32,6 +38,8 @@ import { PartsModule } from './parts/parts.module';
     OrdersModule,
     PiecesModule,
     PartsModule,
+    CategoriesModule,
+    TransactionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

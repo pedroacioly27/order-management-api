@@ -9,6 +9,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { OrderStatus } from '../enums/order-status.enum';
 
 @Entity('orders')
 export class Order {
@@ -20,6 +21,28 @@ export class Order {
 
   @Column()
   description: string;
+
+  @Column({ type: 'date', nullable: true })
+  deliveryDate: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: OrderStatus,
+    default: OrderStatus.PENDING,
+  })
+  status: OrderStatus;
+
+  @Column({
+    type: 'integer',
+    nullable: true,
+  })
+  totalAmount: number | null;
+
+  @Column({
+    type: 'integer',
+    nullable: true,
+  })
+  paidAmount: number | null;
 
   @CreateDateColumn()
   createdDate: Date;
