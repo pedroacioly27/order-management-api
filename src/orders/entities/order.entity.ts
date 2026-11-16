@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { OrderStatus } from '../enums/order-status.enum';
+import { Transaction } from 'src/transactions/entities/transaction.entity';
 
 @Entity('orders')
 export class Order {
@@ -53,4 +54,7 @@ export class Order {
 
   @OneToMany(() => Piece, (piece) => piece.order)
   pieces: Piece[];
+
+  @OneToMany(() => Transaction, (transaction) => transaction.order)
+  transactions: Transaction[];
 }

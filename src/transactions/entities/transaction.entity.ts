@@ -2,6 +2,8 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TransactionType } from '../enums/transaction-type.enum';
 import { Category } from 'src/categories/entities/category.entity';
 import { User } from 'src/users/entities/user.entity';
+import { Order } from 'src/orders/entities/order.entity';
+import { OrderPaymentType } from '../enums/order-payment-type.enum';
 
 @Entity('transactions')
 export class Transaction {
@@ -28,4 +30,13 @@ export class Transaction {
 
   @ManyToOne(() => User, (user) => user.transactions, { onDelete: 'CASCADE' })
   user: User;
+
+  @ManyToOne(() => Order, (order) => order.transactions, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  order: Order | null;
+
+  @Column({ type: 'enum', enum: OrderPaymentType, nullable: true })
+  orderPaymentType: OrderPaymentType | null;
 }

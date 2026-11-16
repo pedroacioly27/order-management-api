@@ -16,6 +16,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import type { AuthRequest } from 'src/types/auth-request.type';
+import { RemoveOrderDto } from './dto/remove-order.dto';
 
 @UseGuards(AuthGuard)
 @Controller('orders')
@@ -59,7 +60,11 @@ export class OrdersController {
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number, @Req() req: AuthRequest) {
-    return this.ordersService.remove(id, req);
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() removeOrderDto: RemoveOrderDto,
+    @Req() req: AuthRequest,
+  ) {
+    return this.ordersService.remove(id, removeOrderDto, req);
   }
 }
