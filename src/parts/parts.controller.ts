@@ -1,6 +1,5 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
   Patch,
@@ -14,6 +13,7 @@ import { PartsService } from './parts.service';
 import { CreatePartDto } from './dto/create-part.dto';
 import { UpdatePartDto } from './dto/update-part.dto';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
+import type { AuthRequest } from 'src/types/auth-request.type';
 
 @UseGuards(AuthGuard)
 @Controller('parts')
@@ -21,7 +21,7 @@ export class PartsController {
   constructor(private readonly partsService: PartsService) {}
 
   @Post()
-  create(@Body() createPartDto: CreatePartDto, @Req() req) {
+  create(@Body() createPartDto: CreatePartDto, @Req() req: AuthRequest) {
     return this.partsService.create(createPartDto, req);
   }
 
@@ -29,13 +29,13 @@ export class PartsController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePartDto: UpdatePartDto,
-    @Req() req,
+    @Req() req: AuthRequest,
   ) {
     return this.partsService.update(id, updatePartDto, req);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number, @Req() req) {
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: AuthRequest) {
     return this.partsService.remove(id, req);
   }
 }

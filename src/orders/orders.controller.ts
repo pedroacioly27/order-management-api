@@ -15,6 +15,8 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
+import type { AuthRequest } from 'src/types/auth-request.type';
+import { RemoveOrderDto } from './dto/remove-order.dto';
 
 @UseGuards(AuthGuard)
 @Controller('orders')
@@ -22,17 +24,29 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto, @Req() req) {
+  create(@Body() createOrderDto: CreateOrderDto, @Req() req: AuthRequest) {
     return this.ordersService.create(createOrderDto, req);
   }
 
   @Get()
-  findAll(@Req() req, @Query('clientName') clientName: string) {
-    return this.ordersService.findAll(req, clientName);
+  findAll(
+    @Req() req: AuthRequest,
+    @Query('clientName') clientName: string,
+    @Query('deliveryDate') deliveryDate: string,
+    @Query('hideCompleted') hideCompleted: string,
+    @Query('onlyWithDeliveryDate') onlyWithDeliveryDate: string,
+  ) {
+    return this.ordersService.findAll(
+      req,
+      clientName,
+      deliveryDate,
+      hideCompleted === 'true',
+      onlyWithDeliveryDate === 'true',
+    );
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number, @Req() req) {
+  findOne(@Param('id', ParseIntPipe) id: number, @Req() req: AuthRequest) {
     return this.ordersService.findOne(id, req);
   }
 
@@ -40,13 +54,17 @@ export class OrdersController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateOrderDto: UpdateOrderDto,
-    @Req() req,
+    @Req() req: AuthRequest,
   ) {
     return this.ordersService.update(id, updateOrderDto, req);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number, @Req() req) {
-    return this.ordersService.remove(id, req);
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() removeOrderDto: RemoveOrderDto,
+    @Req() req: AuthRequest,
+  ) {
+    return this.ordersService.remove(id, removeOrderDto, req);
   }
 }
