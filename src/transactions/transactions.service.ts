@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
 import {
@@ -53,14 +57,18 @@ export class TransactionsService {
   async findAll(req: AuthRequest) {
     return this.transactionRepository.find({
       where: { user: { id: req.user.sub } },
-      relations: { category: true },
+      relations: { category: true, order: true },
+      order: {
+        date: 'DESC',
+        id: 'DESC',
+      },
     });
   }
 
   async findOne(id: number, req: AuthRequest) {
     const transaction = await this.transactionRepository.findOne({
       where: { id, user: { id: req.user.sub } },
-      relations: { category: true },
+      relations: { category: true, order: true },
     });
 
     if (!transaction) {
@@ -76,6 +84,12 @@ export class TransactionsService {
     req: AuthRequest,
   ) {
     const transaction = await this.findOne(id, req);
+
+    if (transaction.order) {
+      throw new BadRequestException(
+        'Transactions linked to orders cannot be edited',
+      );
+    }
 
     if (updateTransactionDto.categoryId !== undefined) {
       if (updateTransactionDto.categoryId === null) {
@@ -113,6 +127,12 @@ export class TransactionsService {
 
   async remove(id: number, req: AuthRequest) {
     const transaction = await this.findOne(id, req);
+
+    if (transaction.order) {
+      throw new BadRequestException(
+        'Transactions linked to orders cannot be deleted',
+      );
+    }
 
     await this.transactionRepository.delete(transaction.id);
 

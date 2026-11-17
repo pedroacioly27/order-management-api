@@ -65,7 +65,7 @@ export class OrdersService {
 
     if (existingTransaction) {
       existingTransaction.amount = amount;
-      existingTransaction.description = `${paymentType === OrderPaymentType.SIGNAL ? 'Sinal' : 'Pagamento restante'} - Encomenda #${order.id} - ${order.clientName}`;
+      existingTransaction.description = `${paymentType === OrderPaymentType.SIGNAL ? 'Sinal' : 'Pagamento restante'} - Encomenda #${String(order.orderNumber).padStart(4, '0')} - ${order.clientName}`;
 
       await transactionRepository.save(existingTransaction);
 
@@ -73,7 +73,7 @@ export class OrdersService {
     }
 
     const transaction = transactionRepository.create({
-      description: `${paymentType === OrderPaymentType.SIGNAL ? 'Sinal' : 'Pagamento restante'} - Encomenda #${order.id} - ${order.clientName}`,
+      description: `${paymentType === OrderPaymentType.SIGNAL ? 'Sinal' : 'Pagamento restante'} - Encomenda #${String(order.orderNumber).padStart(4, '0')} - ${order.clientName}`,
       amount,
       type: TransactionType.INCOME,
       date: this.getCurrentDate(),
@@ -87,25 +87,33 @@ export class OrdersService {
   }
 
   async create(createOrderDto: CreateOrderDto, req: AuthRequest) {
-    const user = await this.userRepository.findOne({
-      where: { id: req.user.sub },
-    });
-    if (!user) {
-      throw new UnauthorizedException('User not authorized');
-    }
-    if (
-      (createOrderDto.totalAmount !== undefined &&
-        createOrderDto.paidAmount !== undefined &&
-        createOrderDto.totalAmount < createOrderDto.paidAmount) ||
-      (createOrderDto.totalAmount === undefined &&
-        createOrderDto.paidAmount !== undefined)
-    ) {
-      throw new BadRequestException('Paid amount cannot exceed total amount');
-    }
     return this.dataSource.transaction(async (manager) => {
+      if (
+        (createOrderDto.totalAmount !== undefined &&
+          createOrderDto.paidAmount !== undefined &&
+          createOrderDto.totalAmount < createOrderDto.paidAmount) ||
+        (createOrderDto.totalAmount === undefined &&
+          createOrderDto.paidAmount !== undefined)
+      ) {
+        throw new BadRequestException('Paid amount cannot exceed total amount');
+      }
+
+      const user = await manager.findOne(User, {
+        where: { id: req.user.sub },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('User not authorized');
+      }
+      user.lastOrderNumber += 1;
+
+      await manager.save(user);
+
       const order = manager.create(Order, {
         clientName: createOrderDto.clientName,
         description: createOrderDto.description,
+        orderNumber: user.lastOrderNumber,
         deliveryDate: createOrderDto.deliveryDate ?? null,
         status: createOrderDto.status ?? OrderStatus.PENDING,
         totalAmount: createOrderDto.totalAmount ?? null,
@@ -443,7 +451,7 @@ export class OrdersService {
         }
 
         const reversal = manager.create(Transaction, {
-          description: `Estorno - Encomenda #${order.id} - ${order.clientName}`,
+          description: `Estorno - Encomenda #${String(order.orderNumber).padStart(4, '0')} - ${order.clientName}`,
           amount: totalReceived,
           type: TransactionType.EXPENSE,
           date: this.getCurrentDate(),

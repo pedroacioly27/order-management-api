@@ -17,6 +17,9 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ type: 'integer', default: 0 })
+  lastOrderNumber: number;
+
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
 

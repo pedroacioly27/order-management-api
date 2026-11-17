@@ -45,6 +45,9 @@ export class Order {
   })
   paidAmount: number | null;
 
+  @Column({ type: 'integer' })
+  orderNumber: number;
+
   @CreateDateColumn()
   createdDate: Date;
 
